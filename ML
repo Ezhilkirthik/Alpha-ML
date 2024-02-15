@@ -1,0 +1,576 @@
+#Import Modules
+import speech_recognition as s
+import weather_forecast as w
+from datetime import datetime
+import os
+import pywhatkit
+import pyttsx3
+import random
+import sys
+import wikipedia
+import psutil
+import time
+import webbrowser
+from tkinter import messagebox
+from tkinter import*
+from translate import Translator
+from pygame import mixer
+from PIL import Image
+import pyautogui
+import pyjokes
+import platform
+from openpyxl import load_workbook
+import cv2
+import requests
+import smtplib
+import requests
+import openpyxl
+from bs4 import BeautifulSoup
+
+def search_and_save(query):
+    # Search the web and get the results
+    url = f"https://www.google.com/search?q={query}"
+    headers = {'User-Agent': 'Mozilla/5.0'}
+    response = requests.get(url, headers=headers)
+    soup = BeautifulSoup(response.content, 'html.parser')
+
+    # Extract key points
+    key_points = []
+    for p_tag in soup.find_all("p"):
+        text = p_tag.text
+        if len(text) > 50:
+            key_points.append(text)
+
+    # Save the answer in an excel sheet
+    workbook = openpyxl.load_workbook("answers.xlsx")
+    sheet = workbook.active
+    sheet[f"A{sheet.max_row+1}"] = query
+    sheet[f"B{sheet.max_row+1}"] = "\n".join(key_points)
+    workbook.save("answers.xlsx")
+
+def get_saved_answer(query):
+    workbook = openpyxl.load_workbook("answers.xlsx")
+    sheet = workbook.active
+    for row in range(1, sheet.max_row + 1):
+        if sheet[f"A{row}"].value == query:
+            return sheet[f"B{row}"].value
+    return None
+
+def alpha():
+        #intialising mixer(Pygame)
+        mixer.init()
+
+        #intialising pyttsx3
+        speaker = pyttsx3.init()
+
+        #Wishing User
+        def wish():
+            hour = datetime.now().hour
+            if hour >= 0 and hour < 12:
+                speaker.say("Good Morning sir")
+
+            elif hour >= 12 and hour < 18:
+                speaker.say("Good Afternoon sir")
+
+            else:
+                speaker.say("Good Evening sir")
+
+        wish()
+
+        #AI Effect
+##        speaker.say("Initializing Alpha ")
+##        speaker.say("Starting all systems applications")
+##        speaker.say("Checking the internet connection")
+##        speaker.say("All drivers are up and running")
+##        speaker.say("All systems have been activated")
+##        speaker.say("I am Alpha. Please tell me how may I help you")
+
+        while True:
+                try:
+
+                        #greetings from AI
+                        greeting = ["hello", "wake up",  "time to work", "hey","hai","hi"
+                             "ok", "are you there"]
+                        greeting_res = ["always there for you sir", "i am ready sir",
+                                 "your wish is my command", "how can i help you sir?", "i am online and ready sir"]
+                        
+                        #Speech Recognition
+                        a = s.Recognizer()
+
+                        with s.Microphone() as source:
+                            print("Listening...")
+                            a.adjust_for_ambient_noise(source,duration=0.2)
+                            a.pause_threshold = 1
+                            audio1 = a.listen(source)
+                            text1 = a.recognize_google(audio1)
+                            lower = text1.lower()
+                            print(text1)
+                            if lower.startswith("can you"):
+                                print("Yes Sir",end=" ")
+                                speaker.say("yes sir")
+
+                        #stopping program
+                        if 'stop' in lower:
+                                sys.exit(print('Bye Sir, have a good day.'))
+
+                        #stopping program
+                        elif 'bye' in lower:
+                            sys.exit(print("Ok sir, Take Care."))
+
+                        #Greetings from Alpha
+                        elif lower in greeting:
+                            greeting = random.choice(greeting_res)
+                            print(greeting)
+                            speaker.say(greeting)
+
+                        elif 'headlines' in lower:
+                                url = 'https://www.bbc.com/news'
+                                response = requests.get(url)
+
+                                soup = BeautifulSoup(response.text, 'html.parser')
+                                headlines = soup.find('body').find_all('h3')
+                                unwanted = ['BBC World News TV', 'BBC World Service Radio',
+                                                        'News daily newsletter', 'Mobile app', 'Get in touch']
+
+                                for x in list(dict.fromkeys(headlines)):
+                                        if x.text.strip() not in unwanted:
+                                                print(x.text.strip())
+
+
+                        elif "tell my friends about you" in lower:
+                            speaker.say("Hi friends. I am Alpha. I am a virtual assisstant. I am created to assisst you. ")
+
+                        elif "tell me about you" in lower:
+                            speaker.say("Hi. I am Alpha. I am a virtual assisstant. I am created to assisst you. ")
+                
+                        elif "introduce yourself" in lower:
+                            speaker.say("Hi friends. I am Alpha. I am a virtual assisstant. I am created to assisst you. ")
+
+                        #Calculating
+                        elif "calculat" in lower:
+                            speaker.say("Opening Calculator")
+                            os.system("calc.exe")
+
+                        elif "mail" in lower:
+                            r1 = input("Enter the receiver: ")
+                            s1= input("Enter the subject: ")
+                            m=input("Enter the message you wanna sent: ")
+                            print('📧📧📧 Processing 📧📧📧')
+                            time.sleep(2)
+                            try:
+                                server= smtplib.SMTP('smtp.gmail.com',587)
+                                server.starttls()
+                                server.login('ezhilkirthikm@gmail.com','hkepxwqhjneoquep')
+                                message='subject:{}\n{} '. format(s1,m)
+                                server.sendmail('ezhilkirthikm@gmail.com',r1,message)
+                                print('The mail have been successfully sent')
+                                speaker.say("Mail is sent successfully")
+                            except:
+                                print("Mail is not sent try again later or check your google settings")
+                                speaker.say("Mail could not be sent")
+
+                        #Checking battery level
+                        elif 'battery' in lower:
+                            a=psutil.sensors_battery()
+                            if a.percent < 30:
+                                battery1="Sir you have only",a.percent,"percent battery left"
+                                speaker.say(battery1)
+                            else:
+                                battery2="Sir you have ",a.percent,"percent battery left"
+                                speaker.say(battery2)
+
+                        elif "hello" in lower:
+                                speaker.say("Hi, it's really good to hear from you Sir")
+                                print("Hi, it's really good to hear from you Sir")
+
+                        elif "love you" in lower:
+                                speaker.say("love you too")
+                                print("love you too")                                
+
+                        #take a picture
+                        elif "take a photo" in lower:
+                            workbook = load_workbook(filename="Alpha.xlsx")
+                            sheet = workbook.active
+                            picture = sheet['B2']
+                            cam = cv2.VideoCapture(0)
+                            photo, img = cam.read()
+                            cv2.imwrite("D:\picture\opencv"+str(picture.value)+".png", img)
+                            picture.value += 1
+                            speaker.say("Took a picture")
+                            print("Took a picture")
+                            del(cam)
+                            workbook.save("Alpha.xlsx")
+
+                        elif 'show me the photo' in lower:
+                            workbook = load_workbook(filename="Alpha.xlsx")
+                            sheet = workbook.active
+                            screen = sheet['B2']
+                            im = Image.open(r"D:\picture\opencv"+str((screen.value)-1)+".png")
+                            im.show()
+                            speaker.say("Here is it sir")
+                            print("Here is it sir")
+                            workbook.save("Alpha.xlsx")
+
+                        #Screen Shot
+                        elif 'take a screenshot' in lower:
+                            workbook = load_workbook(filename="Alpha.xlsx")
+                            sheet = workbook.active
+                            Screenshot = pyautogui.screenshot()
+                            screen = sheet['C2']
+                            dire = os.path.join("D:\\","screenshot","screenshot"+str(screen.value))
+                            direc1 = r'D:\screenshot\screenshot'+str(screen.value)+'.png'
+                            Screenshot.save(direc1)
+                            screen.value += 1
+                            speaker.say("Took a Screenshot")
+                            print("Took a Screenshot")
+                            workbook.save("Alpha.xlsx")
+
+                        #Screen Shot (Show)
+                        elif 'show me the screenshot' in lower:
+                            workbook = load_workbook(filename="Alpha.xlsx")
+                            sheet = workbook.active
+                            screen = sheet['C2']
+                            im = Image.open(r"D:\screenshot\screenshot"+str((screen.value)-1)+".png")
+                            im.show()
+                            speaker.say("Here is it sir")
+                            print("Here is it sir")
+                            workbook.save("Alpha.xlsx")
+
+                        elif 'delete the screenshot' in lower:
+                                os.remove("D:\screenshot\screenshot"+str((screen.value)-1)+".png")
+
+                        #Changing Tab
+                        elif "change the window" in lower:
+                                speaker.say("Switching the window")
+                                pyautogui.keyDown("alt")
+                                pyautogui.press("tab")
+                                time.sleep(1)
+                                pyautogui.keyUp("alt")
+
+                        #Timing
+                        elif "timer" in lower:
+                            timer = input("Enter the timing... ")
+                            time.sleep(int(timer))
+                            speaker.say("Time up sir.. Wake up")
+                            messagebox.showinfo("TIMER", timer+" has completed")
+
+                        #Changing Desktop
+                        elif 'first desktop' in lower:
+                            speaker.say("switching desktop")
+                            pyautogui.keyDown("win")
+                            pyautogui.keyDown("ctrl")
+                            pyautogui.press("left")
+                            pyautogui.keyUp("win")
+                            pyautogui.keyUp("ctrl")
+
+                        #Changing Desktop
+                        elif 'second desktop' in lower:
+                            speaker.say("switching desktop")
+                            pyautogui.keyDown("win")
+                            pyautogui.keyDown("ctrl")
+                            pyautogui.press("right")
+                            pyautogui.keyUp("win")
+                            pyautogui.keyUp("ctrl")
+
+                        #Making order
+                        elif 'order' in lower:
+                                orderin = input("From Which Web Do U Wanna Order: ")
+                                wtorder = input("What do you wanna order: ")
+                                if wtorder.lower() == "amazon":
+                                        webbrowser.open('www.'+orderin+'.com'+'/s?k='+wtorder)
+                                elif wtorder == "flipkart":
+                                        webbrowser.open('www.'+orderin+'.com'+'/search?q=='+wtorder)
+                                elif wtorder == "myntra":
+                                        webbrowser.open('www.'+orderin+'.com'+'/'+wtorder)
+                                elif wtorder == "ajio":
+                                        webbrowser.open('www.'+orderin+'.com'+'/s'+wtorder)
+                        
+                                speaker.say("I hope you enjoy...")
+
+                        #Taskbar
+                        elif 'task manager' in lower:
+                            speaker.say("opening task manager")
+                            pyautogui.keyDown("ctrl")
+                            pyautogui.keyDown("shift")
+                            pyautogui.press("esc")
+                            pyautogui.keyUp("ctrl")
+                            pyautogui.keyUp("shift")
+
+                        #New Folder
+                        elif "create a new folder" in lower:
+                            username = os.getlogin()
+                            direc = os.path.join("C:\\","Users",username,"OneDrive","Desktop","ezhil")
+                            os.mkdir(direc)
+                            speaker.say("Sir folder is created")
+
+                        #System info
+                        elif "system info" in lower:
+                            my_system = platform.uname()
+                            speaker.say("Here is the system information")
+                            print(f"System: {my_system.system}")
+                            print(f"Node Name: {my_system.node}")
+                            print(f"Release: {my_system.release}")
+                            print(f"Version: {my_system.version}")
+                            print(f"Machine: {my_system.machine}")
+                            print(f"Processor: {my_system.processor}")
+
+                        elif lower == "what is your name":
+                            speaker.say("My name is Alpha ")
+                            print("My name is Alpha ")
+
+                        elif lower == "what is my name":
+                            workbook = load_workbook(filename="Alpha.xlsx")
+                            sheet = workbook.active
+                            speaker.say("Your name is "+str(sheet['A2'].value))
+                            print("Your name is "+str(sheet['A2'].value))
+                            workbook.save("Alpha.xlsx")
+
+                        elif "change my name to" in lower:
+                            workbook = load_workbook(filename="Alpha.xlsx")
+                            sheet = workbook.active
+                            lowersplit = lower.split()
+                            changename1 = sheet["A2"]
+                            changename1.value = lowersplit[-1]
+                            speaker.say("Your Name is Change to "+ lowersplit[-1].title())
+                            print("Your Name is Change to "+lowersplit[-1].title())
+                            workbook.save("Alpha.xlsx")
+
+                        #Good Morning,Afternoon,Evening
+                        elif lower == "good morning":
+                            speaker.say("Good morning sir")
+                            print("Good morning sir")
+
+                        elif lower == "good afternoon":
+                            speaker.say("Good Afternoon sir")
+                            print("Good Afternoon sir")
+
+                        elif lower == "good evening":
+                            speaker.say("Good Evening sir")
+                            print("Good Evening sir")
+
+                        elif lower == "good night":
+                            speaker.say("Good night sir")
+                            print("Good Night sir")
+
+                        elif "what can you do for me" in lower:
+                            speaker.say("I can do what you say")
+                            print("I can do what you say")
+
+                        elif "open facebook" in lower:
+                                webbrowser.open("www.facebook.com")
+                                speaker.say("Opening Face book")
+                                print("Opening Face book")
+
+                        elif "open instagram" in lower:
+                                webbrowser.open("www.instagram.com")
+                                speaker.say("Opening Instagram")
+                                print("Opening Instagram")
+
+                        #Time
+                        elif "time" in lower:
+                            today = datetime.today()
+                            now = datetime.now()
+                            d1 = today.strftime("%B %d, %Y")
+                            dt_string = now.strftime("%I : %M %p")
+                            print("Date And Time is", d1, dt_string)
+                            speaker.say("Date and time is" + d1 + "   " + dt_string)
+
+                        #Weather
+                        elif "weather" in lower:
+                            split = text1.split()
+                            split1 = split[-1]
+                            location = str(split1)
+                            print("Weather report for: " + location)
+                            weather = w.forecast(place=location)
+                            report = "weather report is here"
+                            speaker = pyttsx3. init()
+                            speaker.say(report)
+                            speaker. runAndWait()
+                            
+                        #search (Google)
+                        elif "search" in lower:
+                            command = lower.replace("search","")
+                            speaker.say("searching"+command)
+                            pywhatkit.search(command)
+
+                        #Translate (Type the Lang)
+                        elif "translate" in lower:
+                            word = lower.replace("translate", "")
+                            from_lang = input("Enter from which language you should change to; ")
+                            to_lang = input("Enter to which language you should change to; ")
+                            translator = Translator(from_lang=from_lang,to_lang=to_lang)
+                            translation = translator.translate(word)
+                            speaker.say(translation)
+                            print(translation)
+
+                        #Play song from spotify
+                        elif "spotify" in lower:
+                            speaker.say("Enjoy with your favorite songs sir")
+                            webbrowser.open('www.spotify.com')
+
+                        #Song
+                        elif 'song' in lower:
+                            path = "D:\\ezhil\music\\"
+                            music = random.choice(os.listdir("D:\ezhil\music\\"))
+                            if music.startswith('Album'):
+                                while music.startswith('Album')!=False:
+                                    music = random.choice(os.listdir("D:\ezhil\music\\"))
+                            else:
+                                print(music)
+                                speaker.say("playing your favorite")
+                                random_music = path + music 
+                                mixer.music.load(random_music)
+                                mixer.music.play()
+
+                        #simple words to Alpha
+                        elif "nice" in lower:
+                            speaker.say("It's my pleasure sir")
+                            print("It's my pleasure sir")
+
+                        #Find the Location
+                        elif 'location' in lower:
+                            location = input('Enter location to be searched?')
+                            com = 'https://google.com/maps/place/' + location + '/&amp;'
+                            webbrowser.open(com)
+
+                        #pause song
+                        elif 'pause' in lower:
+                            mixer.music.pause()
+
+                        #close song
+                        elif lower == 'close the player':
+                            mixer.music.stop()
+
+                        #close song
+                        elif lower == 'close it':
+                            mixer.music.stop()
+
+                        #unpause song
+                        elif 'unpause' in lower:
+                            mixer.music.unpause()
+
+                        #Twitter
+                        elif 'Twitter' in text1:
+                            webbrowser.open("https://twitter.com/home?lang=en")
+                            speaker.say("Have a look sir")
+
+                        #Youtube
+                        elif 'open youtube' in lower:
+                                webbrowser.open("https://www.youtube.com/", new=2)
+                                speaker.say("Enjoy")
+                                
+                        #Video on youtube
+                        elif "play" in lower:
+                            song = text1.replace("play","")
+                            speaker.say("Playing"+song)
+                            pywhatkit.playonyt(song)
+
+                        #Thank You
+                        elif "thank" in lower:
+                            speaker.say("You are welcome")
+                            print("You are welcome")
+
+                        #Wiki
+                        elif 'what is' in lower:
+                                try:
+                                        speaker.say('Searching Wikipedia')
+                                        lower = lower.replace("wikipedia", "")
+                                        results = wikipedia.summary(lower, sentences=2)
+                                        speaker.say("According to Wikipedia")
+                                        print(results)
+                                        speaker.say(results)
+                                except:
+                                        speaker.say("No such page found on wikipedia sir")
+
+                        #Wiki
+                        elif 'tell me about' in lower:
+                                try:
+                                        command = lower.replace("tell me about ","")
+                                        speaker.say("searching"+command)
+                                        pywhatkit.search(command)
+                                except:
+                                        speaker.say("No such page found on wikipedia sir")
+
+                        elif "ip address" in lower:
+                                ip = requests.get('https://api.ipify.org').text
+                                print(ip)
+                                speaker.say(f"Your ip address is {ip}")
+
+                        #Shut down
+                        elif 'shutdown' in lower:
+                            choice = input("Please confirm to shutdown the pc (y or n)"
+                                                    "I hope you are taking this decision in your own peace")
+                            if choice == 'n':
+                                exit()
+                            else:
+                                os.system("shutdown /s /t 1")
+
+                        #Jokes
+                        elif "tell me a joke" in lower:
+                            joke = pyjokes.get_joke()
+                            speaker.say(joke)
+                            print(joke)
+
+                        elif "close this tab" in lower:
+                            pyautogui.keyDown("ctrl")
+                            pyautogui.press("w")
+                            pyautogui.keyUp("ctrl")
+
+                        elif "restore the tab" in lower:
+                            pyautogui.keyDown("ctrl")
+                            pyautogui.keyDown("shift")
+                            pyautogui.press("t")
+                            pyautogui.keyUp("ctrl")
+                            pyautogui.keyDown("shift")
+
+                        #Opening apps
+                        elif "app" in lower:
+                            path1 = lower.replace('open','')
+                            path2 = path1.replace('app','')
+                            path3 = path2.rstrip()
+                            path4 = path3.lstrip()
+                            path5 = path4.title()
+                            path = "D:\\Apps\\"+path5+".lnk"
+                            print(path)
+                            os.system(path)
+
+                        elif 'open chrome' in lower:
+                                webbrowser.open('www.google.com')
+                        
+                        #How r u
+                        elif 'how are you' in lower:
+                            msgs = ['Just doing my thing! Sir', 'I am fine! Sir',
+                                    'Nice!', 'I am nice and full of energy Sir' , 'Great!' ,
+                                    "I'm doing really well, thank you Sir" ,
+                                    'I Am Fantastic! Sir']
+                            speaker.say(random.choice(msgs))
+
+                        else:
+                            data = input("I don't have this in my database Can I Seacrh This In Browser? Enter Yes or No; ")
+                            if data.lower()=="yes":
+                                            command = lower.replace("search","")
+                                            speaker.say("searching"+command)
+                                            pywhatkit.search(command)
+                                            search_and_save(command)
+                                            time.sleep(1)
+                                            get_saved_answer(command)
+                            else:
+                                speaker.say("What can i do next for you?")
+
+            #Except If no words is recognised
+                except s.UnknownValueError:
+                        print("Say That Again Please")
+
+                speaker.runAndWait()
+
+
+#tkinter
+alpha = Tk()
+alpha.title("ALPHA ")
+alpha.geometry("610x500")
+
+img = PhotoImage(file="D:\\python\\Alpha.png")
+label = Label(image=img)
+label.pack()
+
+speak = Button(alpha, text = 'Speak!!!!',font=("MS Sans Serif",16,"bold"), bd = '10',bg='cyan',command=alpha).place(x=460,y=415)
